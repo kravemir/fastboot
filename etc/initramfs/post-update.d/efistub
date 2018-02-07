@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+echo "$(date)" > /root/efistubtest
+
+cp -v /boot/vmlinuz-* /boot/initrd.img-* /boot/efi/
+
+# TODO: for each version
+LATEST_KERNEL="$( ls /boot/vmlinuz-* | sort -V | tail -n1 | sed 's/[^-]*-\(.*\)/\1/g' )"
+
+ROOT_PARTITION=$(cat /etc/fstab | grep -v '^ *#' | sed -n 's|^\(.*\) / .*|\1|p')
+
+cat > /boot/efi/loader/entries/debian.conf << EOF
+title debian ${LATEST_KERNEL}
+linux vmlinuz-${LATEST_KERNEL}
+initrd initrd.img-${LATEST_KERNEL}
+options root=${ROOT_PARTITION} ro quiet
+EOF
